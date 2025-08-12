@@ -91,13 +91,31 @@ scripts/run_job.sh
 scripts/run_pipeline.sh
 ```
 
+### Verify Successful Deployment
+After running the above commands, you should see:
+```bash
+# Check deployed notebooks
+databricks -p "$DATABRICKS_CONFIG_PROFILE" workspace list \
+  "/Workspace/Users/<your-email>/bundles/databricks_demo/dev/files/notebooks"
+
+# Expected output:
+# 01_local_notebook    NOTEBOOK  PYTHON
+# dlt_pipeline        NOTEBOOK  PYTHON
+```
+
+**Success indicators:**
+- ✅ `bundle_validate.sh` → "Validation OK!"
+- ✅ `bundle_deploy.sh` → "Deployment complete!"
+- ✅ `run_job.sh` → "TERMINATED SUCCESS"
+- ✅ `run_pipeline.sh` → Pipeline update starts running
+
 ## Interactive Development
 
 ### Notebooks in VS Code
-Two approaches for running notebooks interactively:
+Three approaches for running notebooks interactively:
 
 **A. Using Databricks Extension (.py files)**
-1. Open `interactive_demo.py`
+1. Open any `.py` file in `notebooks/` directory
 2. `Ctrl+Shift+P` → "Databricks: Configure Cluster"
 3. Select workspace and cluster
 4. Place cursor in any cell (between `# COMMAND ----------`)
@@ -105,13 +123,8 @@ Two approaches for running notebooks interactively:
 
 **B. In Databricks Workspace (recommended)**
 ```bash
-# Upload notebook to workspace
-export DATABRICKS_CONFIG_PROFILE=codespaces
-databricks -p "$DATABRICKS_CONFIG_PROFILE" workspace import \
-  "/Workspace/Users/<your-email>/interactive_demo" \
-  --file "interactive_demo.py" --format SOURCE --language PYTHON --overwrite
-
-# Then open in browser: https://<workspace-url>/#workspace/users/<your-email>/interactive_demo
+# Access deployed notebooks directly in workspace:
+# https://<workspace-url>/#workspace/users/<your-email>/bundles/databricks_demo/dev/files/notebooks/01_local_notebook
 ```
 
 **C. Live Sync Development**
@@ -121,12 +134,22 @@ scripts/bundle_sync.sh
 # Edit notebooks locally, changes appear in workspace automatically
 ```
 
+**D. Programmatic Data Access**
+```bash
+# Use the SDK to download data locally for inspection
+python test_authentication.py  # Test connectivity
+python download_data.py        # Extract data to output/ directory
+```
+
 ### Files and Structure
 - `databricks.yml` - Bundle configuration (jobs, pipelines, sync paths)
 - `notebooks/` - Notebook source files (Python format)
+  - `01_local_notebook.py` - Simple demo notebook showing PySpark DataFrame operations
+  - `dlt_pipeline.py` - Delta Live Tables pipeline with bronze and silver tables
 - `scripts/` - Helper scripts for deployment and execution
 - `.vscode/` - VS Code settings for Databricks extension
-- `interactive_demo.py` - Example notebook for interactive development
+- `test_authentication.py` - Comprehensive authentication and SDK test script
+- `download_data.py` - Example script for extracting data from Databricks to local files
 
 ## Customization
 - **Use existing cluster** (faster job runs):
@@ -148,6 +171,7 @@ export BUNDLE_VARS="${BUNDLE_VARS} catalog=<your-catalog>"
 
 ### Bundle Issues  
 - **"parse https://${var.workspace_host}"**: Set `WORKSPACE_HOST` environment variable before running bundle commands.
+- **"both file.py and file.ipynb point to the same remote file location"**: Remove either the `.py` or `.ipynb` version - bundle sync cannot handle both formats pointing to the same workspace path.
 - **"Unable to access notebook"**: Run `scripts/bundle_sync.sh` or manually upload notebooks to workspace.
 - **"WAITING_FOR_RESOURCES"**: DLT pipelines take 3-10 minutes to provision compute. This is normal.
 
