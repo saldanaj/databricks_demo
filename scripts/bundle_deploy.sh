@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-: "${WORKSPACE_HOST:?Set WORKSPACE_HOST to your workspace URL}"
+if [[ -n "${WORKSPACE_HOST:-}" && -z "${DATABRICKS_HOST:-}" ]]; then
+	export DATABRICKS_HOST="${WORKSPACE_HOST}"
+fi
 
-databricks bundle deploy -t dev --var workspace_host="${WORKSPACE_HOST}" ${BUNDLE_VARS:+--var ${BUNDLE_VARS}}
+PROFILE_ARG=()
+if [[ -n "${DATABRICKS_CONFIG_PROFILE:-}" ]]; then
+	PROFILE_ARG=(-p "${DATABRICKS_CONFIG_PROFILE}")
+elif grep -q "^\[codespaces\]$" "$HOME/.databrickscfg" 2>/dev/null; then
+	PROFILE_ARG=(-p codespaces)
+fi
+
+databricks "${PROFILE_ARG[@]}" bundle deploy -t dev ${BUNDLE_VARS:+--var ${BUNDLE_VARS}}

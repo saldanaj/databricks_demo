@@ -6,9 +6,6 @@ workspace:
   root_path: /Users/${workspace.current_user.userName}/bundles/${bundle.name}/${bundle.target}
 
 variables:
-  workspace_host:
-    description: "Databricks workspace URL (e.g., https://adb-12345.6.azuredatabricks.net)"
-    default: ""
   existing_cluster_id:
     description: "Optional: existing cluster ID for the demo job (recommended for dev)"
     default: ""
@@ -19,8 +16,6 @@ variables:
 targets:
   dev:
     default: true
-    workspace:
-      host: ${var.workspace_host}
     sync:
       include:
         - notebooks
