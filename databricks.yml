@@ -1,0 +1,62 @@
+bundle:
+  name: databricks_demo
+
+workspace:
+  # Destination path inside your Databricks workspace
+  root_path: /Users/${workspace.current_user.userName}/bundles/${bundle.name}/${bundle.target}
+
+variables:
+  workspace_host:
+    description: "Databricks workspace URL (e.g., https://adb-12345.6.azuredatabricks.net)"
+    default: ""
+  existing_cluster_id:
+    description: "Optional: existing cluster ID for the demo job (recommended for dev)"
+    default: ""
+  catalog:
+    description: "Optional: Unity Catalog name for DLT (if UC enabled)"
+    default: ""
+
+targets:
+  dev:
+    default: true
+    workspace:
+      host: ${var.workspace_host}
+    sync:
+      include:
+        - notebooks
+
+resources:
+  jobs:
+    demo_notebook_job:
+      name: ${bundle.name} ${bundle.target} - Notebook Job
+      tasks:
+        - task_key: run_notebook
+          notebook_task:
+            notebook_path: ${workspace.root_path}/notebooks/01_local_notebook
+          # Attach to an existing interactive cluster for fast iteration
+          existing_cluster_id: ${var.existing_cluster_id}
+      # If you prefer ephemeral job clusters, comment 'existing_cluster_id' above and
+      # uncomment the job_clusters section below and set a valid node_type_id.
+      # job_clusters:
+      #   - job_cluster_key: jcl
+      #     new_cluster:
+      #       spark_version: 14.3.x-scala2.12
+      #       num_workers: 1
+      #       node_type_id: <FILL_ME>
+
+  pipelines:
+    demo_dlt_pipeline:
+      name: ${bundle.name} ${bundle.target} - DLT
+      development: true
+      edition: CORE
+      photon: true
+      clusters:
+        - label: default
+          num_workers: 1
+      libraries:
+        - notebook:
+            path: ${workspace.root_path}/notebooks/dlt_pipeline
+      # If Unity Catalog is enabled, set catalog and a target schema below
+      # catalog: ${var.catalog}
+      # target: ${bundle.name}_${bundle.target}
+      storage: dbfs:/pipelines/${bundle.name}-${bundle.target}
