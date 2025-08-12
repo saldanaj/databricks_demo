@@ -1,4 +1,8 @@
 {
     "jupyter.interactiveWindow.cellMarker.codeRegex": "^# COMMAND ----------|^# Databricks notebook source|^(#\\s*%%|#\\s*\\<codecell\\>|#\\s*In\\[\\d*?\\]|#\\s*In\\[ \\])",
-    "jupyter.interactiveWindow.cellMarker.default": "# COMMAND ----------"
+    "jupyter.interactiveWindow.cellMarker.default": "# COMMAND ----------",
+    "databricks.connection.default.workspaceUrl": "https://adb-477018903746647.7.azuredatabricks.net",
+    "databricks.connection.default.clusterId": "0812-123906-b46922zm",
+    "databricks.connection.default.authType": "azure-cli",
+    "databricks.connection.default.profile": "codespaces"
 }
